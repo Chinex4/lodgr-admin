@@ -12,43 +12,47 @@ import MonetizationPage from "./pages/dashboard/MonetizationPage";
 import GeneralSettings from "./pages/dashboard/settings/General";
 import SecurityAndAccess from "./pages/dashboard/settings/SecurityAndAccess";
 import AuditLogs from "./pages/dashboard/settings/AuditLogs";
+import { AuthProvider } from "./context/AuthContext";
+import AdminLoginPage from "./pages/auth/AdminLoginPage";
+import PrivateRoute from "./components/auth/PrivateRoute";
 
 function App() {
   const [count, setCount] = useState(0);
 
   return (
     <>
-      <Routes>
-        <Route path="/" element={<AppLayout />}>
-          <Route index element={<DashboardPage />} />
-          <Route path="user-management" element={<UserManagementPage />} />
-          <Route path="content-moderation" element={<ContentModeration />} />
+      <AuthProvider>
+        <Routes>
+          <Route path="/login" element={<AdminLoginPage />} />
           <Route
-            path="content-category"
-            element={<ContentCategoryManagement />}
-          />
-          <Route
-            path="communication-notification"
-            element={<CommunicationNotificationPage />}
-          />
-          <Route
-            path="monetization"
-            element={<MonetizationPage />}
-          />
-          <Route
-            path="settings/general"
-            element={<GeneralSettings />}
-          />
-          <Route
-            path="settings/security-access"
-            element={<SecurityAndAccess />}
-          />
-          <Route
-            path="settings/audit-logs"
-            element={<AuditLogs />}
-          />
-        </Route>
-      </Routes>
+            path="/"
+            element={
+              <PrivateRoute>
+                <AppLayout />
+              </PrivateRoute>
+            }
+          >
+            <Route index element={<DashboardPage />} />
+            <Route path="user-management" element={<UserManagementPage />} />
+            <Route path="content-moderation" element={<ContentModeration />} />
+            <Route
+              path="content-category"
+              element={<ContentCategoryManagement />}
+            />
+            <Route
+              path="communication-notification"
+              element={<CommunicationNotificationPage />}
+            />
+            <Route path="monetization" element={<MonetizationPage />} />
+            <Route path="settings/general" element={<GeneralSettings />} />
+            <Route
+              path="settings/security-access"
+              element={<SecurityAndAccess />}
+            />
+            <Route path="settings/audit-logs" element={<AuditLogs />} />
+          </Route>
+        </Routes>
+      </AuthProvider>
     </>
   );
 }
