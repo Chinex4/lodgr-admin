@@ -1,26 +1,21 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Outlet } from "react-router-dom";
+import { Box, Toolbar } from "@mui/material";
 import Sidebar from "./Sidebar";
 import Topbar from "./Topbar";
 
-function AppLayout() {
-  const [sidebarOpen, setSidebarOpen] = useState(false);
+const drawerWidth = 280;
+
+export default function AppLayout() {
+  const [mobileOpen, setMobileOpen] = useState(false);
   return (
-    <div className="h-screen overflow-hidden bg-[#f5f5f7] text-neutral-900 flex">
-      <Sidebar
-        isMobileOpen={sidebarOpen}
-        onMobileClose={() => setSidebarOpen(false)}
-      />
-
-      <div className="flex-1 flex flex-col">
-        <Topbar onMenuClick={() => setSidebarOpen(true)} />
-
-        <main className="flex-1 overflow-y-auto px-2 md:px-6 lg:px-8 pb-8 pt-6">
-          <Outlet />
-        </main>
-      </div>
-    </div>
+    <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "background.default" }}>
+      <Topbar drawerWidth={drawerWidth} onMenuClick={() => setMobileOpen(true)} />
+      <Sidebar drawerWidth={drawerWidth} mobileOpen={mobileOpen} onClose={() => setMobileOpen(false)} />
+      <Box component="main" sx={{ flexGrow: 1, width: { md: `calc(100% - ${drawerWidth}px)` }, px: { xs: 2, md: 3 }, py: 3 }}>
+        <Toolbar />
+        <Outlet />
+      </Box>
+    </Box>
   );
 }
-
-export default AppLayout;

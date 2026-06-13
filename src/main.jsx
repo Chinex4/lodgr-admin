@@ -1,13 +1,20 @@
 import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
-import "./index.css";
-import App from "./App.jsx";
 import { BrowserRouter } from "react-router-dom";
+import { CssBaseline, ThemeProvider } from "@mui/material";
+import { Toaster } from "react-hot-toast";
+import App from "./App.jsx";
+import { theme } from "./theme";
+import "./index.css";
 
 createRoot(document.getElementById("root")).render(
   <StrictMode>
-    <BrowserRouter>
-      <App />
-    </BrowserRouter>
+    <ThemeProvider theme={theme}>
+      <CssBaseline />
+      <BrowserRouter>
+        <App />
+        <Toaster position="top-right" toastOptions={{ duration: 3500 }} />
+      </BrowserRouter>
+    </ThemeProvider>
   </StrictMode>
 );
