@@ -1,0 +1,85 @@
+name: Deploy Lodgr Admin to cPanel
+
+on:
+  push:
+    branches: ["main"]
+  workflow_dispatch:
+
+concurrency:
+  group: lodgr-admin-deploy
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: "20"
+
+jobs:
+  deploy:
+    name: Build and deploy admin
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint --if-present
+
+      - name: Build
+        env:
+          VITE_API_BASE_URL: ${{ vars.VITE_API_BASE_URL || secrets.VITE_API_BASE_URL }}
+        run: npm run build
+
+      - name: Write SSH key
+        shell: bash
+        env:
+          CPANEL_SSH_KEY_B64: ${{ secrets.CPANEL_SSH_KEY_B64 }}
+        run: |
+          set -euo pipefail
+          mkdir -p ~/.ssh
+          chmod 700 ~/.ssh
+
+          test -n "$CPANEL_SSH_KEY_B64" || (echo "CPANEL_SSH_KEY_B64 is empty" && exit 1)
+
+          printf '%s' "$CPANEL_SSH_KEY_B64" | tr -d '\r\n ' | base64 --decode > ~/.ssh/deploy_key
+
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keygen -y -f ~/.ssh/deploy_key > /dev/null
+
+      - name: Trust host
+        run: |
+          ssh-keyscan -H -p ${{ secrets.CPANEL_PORT }} ${{ secrets.CPANEL_HOST }} >> ~/.ssh/known_hosts
+          chmod 600 ~/.ssh/known_hosts
+
+      - name: Validate deploy path
+        run: |
+          test -n "${{ secrets.ADMIN_APP_PATH }}" || (echo "ADMIN_APP_PATH secret is missing" && exit 1)
+
+      - name: Test SSH login
+        run: |
+          ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -p ${{ secrets.CPANEL_PORT }} \
+            ${{ secrets.CPANEL_USER }}@${{ secrets.CPANEL_HOST }} \
+            "whoami && pwd"
+
+      - name: Ensure admin directory exists
+        run: |
+          ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -p ${{ secrets.CPANEL_PORT }} \
+            ${{ secrets.CPANEL_USER }}@${{ secrets.CPANEL_HOST }} \
+            "mkdir -p '${{ secrets.ADMIN_APP_PATH }}'"
+
+      - name: Upload admin build without touching .htaccess
+        run: |
+          tar --exclude='.htaccess' -czf - -C dist . | \
+          ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -p ${{ secrets.CPANEL_PORT }} \
+            ${{ secrets.CPANEL_USER }}@${{ secrets.CPANEL_HOST }} \
+            "tar -xzf - -C '${{ secrets.ADMIN_APP_PATH }}'"
