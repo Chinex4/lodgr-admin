@@ -77,9 +77,9 @@ jobs:
             ${{ secrets.CPANEL_USER }}@${{ secrets.CPANEL_HOST }} \
             "mkdir -p '${{ secrets.ADMIN_APP_PATH }}'"
 
-      - name: Upload admin build without touching .htaccess
+      - name: Upload admin build
         run: |
-          tar --exclude='.htaccess' -czf - -C dist . | \
+          tar -czf - -C dist . | \
           ssh -i ~/.ssh/deploy_key -o IdentitiesOnly=yes -p ${{ secrets.CPANEL_PORT }} \
             ${{ secrets.CPANEL_USER }}@${{ secrets.CPANEL_HOST }} \
             "tar -xzf - -C '${{ secrets.ADMIN_APP_PATH }}'"

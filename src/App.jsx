@@ -11,6 +11,7 @@ import Newsletter from "./pages/admin/Newsletter";
 import PaymentMethods from "./pages/admin/PaymentMethods";
 import Payouts from "./pages/admin/Payouts";
 import Properties from "./pages/admin/Properties";
+import PropertyDetail from "./pages/admin/PropertyDetail";
 import Reviews from "./pages/admin/Reviews";
 import Settings from "./pages/admin/Settings";
 import Transactions from "./pages/admin/Transactions";
@@ -26,6 +27,7 @@ export default function App() {
           <Route index element={<Overview />} />
           <Route path="users" element={<Users />} />
           <Route path="properties" element={<Properties />} />
+          <Route path="properties/:propertyId" element={<PropertyDetail />} />
           <Route path="bookings" element={<Bookings />} />
           <Route path="payment-methods" element={<PaymentMethods />} />
           <Route path="payouts" element={<Payouts />} />

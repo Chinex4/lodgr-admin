@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button, Chip } from "@mui/material";
+import { Box, Button, Chip } from "@mui/material";
 import VisibilityIcon from "@mui/icons-material/Visibility";
 import Page from "../../components/common/Page";
 import DataTable from "../../components/common/DataTable";
@@ -11,6 +11,18 @@ import { api } from "../../lib/api";
 import { money } from "../../utils/formatters";
 import { mutate } from "../../utils/mutate";
 
+function BookingPropertyThumb({ row }) {
+  const image = row?.properties?.cover_image?.image_url;
+
+  return image ? (
+    <Box component="img" src={image} alt={row?.properties?.title || "Property"} sx={{ width: 64, height: 48, objectFit: "cover", borderRadius: 1 }} />
+  ) : (
+    <Box sx={{ width: 64, height: 48, borderRadius: 1, bgcolor: "grey.100", color: "text.secondary", display: "grid", placeItems: "center", fontSize: 11 }}>
+      No image
+    </Box>
+  );
+}
+
 export default function Bookings() {
   const { rows, loading, error, reload } = useApiList("/admin/bookings");
   const [search, setSearch] = useState("");
@@ -21,6 +33,7 @@ export default function Bookings() {
   return (
     <Page title="Bookings" subtitle="Review, approve, cancel, complete, and refund bookings.">
       <DataTable search={search} onSearch={setSearch} rows={rows} loading={loading} error={error} columns={[
+        { key: "property_image", label: "Image", render: (row) => <BookingPropertyThumb row={row} /> },
         { key: "properties.title", label: "Property" }, { key: "profiles.email", label: "Guest" }, { key: "check_in", label: "Check-in" },
         { key: "total_price", label: "Total", render: (row) => money(row.total_price) }, { key: "status", label: "Status", render: (row) => <Chip size="small" label={row.status} /> },
       ]} actions={(row) => [
