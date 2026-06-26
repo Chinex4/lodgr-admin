@@ -99,13 +99,15 @@ export default function PropertyEdit() {
       const payload = new FormData();
       Object.entries(form).forEach(([key, value]) => {
         if (key === "facilities" || key === "rules") return;
-        payload.append(key, String(value ?? ""));
+        if (value === "" && !["title", "location", "city", "state"].includes(key)) return;
+        payload.append(key, typeof value === "boolean" ? (value ? "1" : "0") : String(value ?? ""));
       });
+      payload.append("_method", "PATCH");
       form.facilities.split(",").map((item) => item.trim()).filter(Boolean).forEach((item) => payload.append("facilities[]", item));
       form.rules.split(",").map((item) => item.trim()).filter(Boolean).forEach((item) => payload.append("rules[]", item));
       newImages.forEach((file) => payload.append("images[]", file));
 
-      await toast.promise(api.patch(`/properties/${propertyId}`, payload), {
+      await toast.promise(api.post(`/properties/${propertyId}`, payload), {
         loading: "Saving property...",
         success: "Property updated",
         error: (requestError) => errorMessage(requestError),
