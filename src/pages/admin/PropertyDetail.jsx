@@ -13,6 +13,7 @@ import {
   Typography,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import EditIcon from "@mui/icons-material/Edit";
 import Page from "../../components/common/Page";
 import { api, errorMessage, unwrap } from "../../lib/api";
 import { money, date } from "../../utils/formatters";
@@ -58,7 +59,7 @@ export default function PropertyDetail() {
       setError("");
 
       try {
-        const payload = unwrap(await api.get(`/properties/${propertyId}`));
+        const payload = unwrap(await api.get(`/admin/properties/${propertyId}`));
         if (active) setProperty(payload);
       } catch (requestError) {
         if (active) setError(errorMessage(requestError));
@@ -108,7 +109,10 @@ export default function PropertyDetail() {
     <Page
       title={property.title}
       subtitle={[property.city, property.state, property.country].filter(Boolean).join(", ")}
-      action={<Button startIcon={<ArrowBackIcon />} onClick={() => navigate("/properties")}>Back</Button>}
+      action={<Stack direction="row" spacing={1}>
+        <Button startIcon={<ArrowBackIcon />} onClick={() => navigate("/properties")}>Back</Button>
+        <Button variant="contained" startIcon={<EditIcon />} onClick={() => navigate(`/properties/${propertyId}/edit`)}>Edit</Button>
+      </Stack>}
     >
       <Grid container spacing={3}>
         <Grid item xs={12} md={7}>

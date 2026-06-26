@@ -5,6 +5,7 @@ import DashboardIcon from "@mui/icons-material/Dashboard";
 import PeopleIcon from "@mui/icons-material/People";
 import HomeWorkIcon from "@mui/icons-material/HomeWork";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
+import ViewCarouselIcon from "@mui/icons-material/ViewCarousel";
 import PaymentsIcon from "@mui/icons-material/Payments";
 import AccountBalanceWalletIcon from "@mui/icons-material/AccountBalanceWallet";
 import CampaignIcon from "@mui/icons-material/Campaign";
@@ -16,7 +17,8 @@ import SettingsIcon from "@mui/icons-material/Settings";
 
 const links = [
   ["/", "Overview", DashboardIcon], ["/users", "Users", PeopleIcon], ["/properties", "Properties", HomeWorkIcon],
-  ["/bookings", "Bookings", EventAvailableIcon], ["/payment-methods", "Payment Methods", PaymentsIcon],
+  ["/bookings", "Bookings", EventAvailableIcon], ["/home-sections", "Home Sections", ViewCarouselIcon],
+  ["/payment-methods", "Payment Methods", PaymentsIcon],
   ["/payouts", "Payouts", AccountBalanceWalletIcon], ["/withdrawals", "Withdrawals", AccountBalanceWalletIcon],
   ["/newsletter", "Newsletter", CampaignIcon], ["/transactions", "Transactions", ReceiptLongIcon],
   ["/reviews", "Reviews", RateReviewIcon], ["/contact-messages", "Contact Messages", ContactMailIcon],

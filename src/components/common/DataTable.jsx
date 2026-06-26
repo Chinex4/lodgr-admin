@@ -9,6 +9,7 @@ import {
   TableBody,
   TableCell,
   TableContainer,
+  Checkbox,
   TableHead,
   TablePagination,
   TableRow,
@@ -25,6 +26,11 @@ export default function DataTable({
   onSearch,
   empty = "No records found",
   actions,
+  selectable = false,
+  selectedIds = [],
+  onSelectionChange,
+  getRowId = idOf,
+  bulkActions,
 }) {
   const [page, setPage] = useState(0);
   const [perPage, setPerPage] = useState(10);
@@ -36,6 +42,28 @@ export default function DataTable({
   }, [rows, search]);
 
   const slice = filtered.slice(page * perPage, page * perPage + perPage);
+  const selectedSet = new Set(selectedIds);
+  const sliceIds = slice.map((row) => getRowId(row)).filter(Boolean);
+  const allSliceSelected = sliceIds.length > 0 && sliceIds.every((id) => selectedSet.has(id));
+  const someSliceSelected = sliceIds.some((id) => selectedSet.has(id));
+
+  const setSelected = (nextIds) => {
+    onSelectionChange?.(Array.from(new Set(nextIds)));
+  };
+
+  const toggleAllVisible = (checked) => {
+    if (checked) {
+      setSelected([...selectedIds, ...sliceIds]);
+      return;
+    }
+
+    setSelected(selectedIds.filter((id) => !sliceIds.includes(id)));
+  };
+
+  const toggleRow = (id, checked) => {
+    if (!id) return;
+    setSelected(checked ? [...selectedIds, id] : selectedIds.filter((item) => item !== id));
+  };
 
   return (
     <Paper>
@@ -50,11 +78,28 @@ export default function DataTable({
           />
         </Box>
       )}
+      {selectable && selectedIds.length > 0 && (
+        <Box sx={{ px: 2, py: 1.5, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 2, bgcolor: "primary.50" }}>
+          <Box sx={{ fontSize: 14, fontWeight: 700 }}>{selectedIds.length} selected</Box>
+          <Stack direction="row" spacing={1} flexWrap="wrap" justifyContent="flex-end">
+            {bulkActions?.(selectedIds)}
+          </Stack>
+        </Box>
+      )}
       {error && <Alert severity="error" sx={{ mx: 2 }}>{error}</Alert>}
       <TableContainer>
         <Table size="small">
           <TableHead>
             <TableRow>
+              {selectable && (
+                <TableCell padding="checkbox">
+                  <Checkbox
+                    checked={allSliceSelected}
+                    indeterminate={!allSliceSelected && someSliceSelected}
+                    onChange={(event) => toggleAllVisible(event.target.checked)}
+                  />
+                </TableCell>
+              )}
               {columns.map((column) => <TableCell key={column.key}>{column.label}</TableCell>)}
               {actions && <TableCell align="right">Actions</TableCell>}
             </TableRow>
@@ -62,11 +107,20 @@ export default function DataTable({
           <TableBody>
             {loading ? Array.from({ length: 6 }).map((_, index) => (
               <TableRow key={index}>
+                {selectable && <TableCell><Skeleton /></TableCell>}
                 {columns.map((column) => <TableCell key={column.key}><Skeleton /></TableCell>)}
                 {actions && <TableCell><Skeleton /></TableCell>}
               </TableRow>
             )) : slice.length ? slice.map((row) => (
-              <TableRow key={idOf(row)} hover>
+              <TableRow key={getRowId(row)} hover>
+                {selectable && (
+                  <TableCell padding="checkbox">
+                    <Checkbox
+                      checked={selectedSet.has(getRowId(row))}
+                      onChange={(event) => toggleRow(getRowId(row), event.target.checked)}
+                    />
+                  </TableCell>
+                )}
                 {columns.map((column) => (
                   <TableCell key={column.key}>{column.render ? column.render(row) : get(row, column.key)}</TableCell>
                 ))}
@@ -78,7 +132,7 @@ export default function DataTable({
               </TableRow>
             )) : (
               <TableRow>
-                <TableCell colSpan={columns.length + (actions ? 1 : 0)}>
+                <TableCell colSpan={columns.length + (actions ? 1 : 0) + (selectable ? 1 : 0)}>
                   <Box sx={{ py: 5, textAlign: "center", color: "text.secondary" }}>{empty}</Box>
                 </TableCell>
               </TableRow>

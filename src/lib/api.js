@@ -16,6 +16,11 @@ export const tokenStore = {
 
 export const api = axios.create({ baseURL: API_BASE_URL, headers: { Accept: "application/json" } });
 
+const notifyAuthExpired = () => {
+  tokenStore.clear();
+  window.dispatchEvent(new Event("admin-auth-expired"));
+};
+
 api.interceptors.request.use((config) => {
   const token = tokenStore.getToken();
   if (token) config.headers.Authorization = `Bearer ${token}`;
@@ -27,7 +32,10 @@ api.interceptors.response.use(
   (response) => response,
   async (error) => {
     const original = error.config;
-    if (error.response?.status === 401 && !original?._retry && tokenStore.getToken()) {
+    const isUnauthorized = error.response?.status === 401;
+    const isRefreshRequest = original?.url?.includes("/auth/refresh");
+
+    if (isUnauthorized && !original?._retry && !isRefreshRequest && tokenStore.getToken()) {
       original._retry = true;
       refreshing ||= api.post("/auth/refresh").then((res) => {
         const token = res.data?.token || res.data?.data?.token;
@@ -39,11 +47,16 @@ api.interceptors.response.use(
         const token = await refreshing;
         original.headers.Authorization = `Bearer ${token}`;
         return api(original);
-      } catch {
-        tokenStore.clear();
-        window.dispatchEvent(new Event("admin-auth-expired"));
+      } catch (refreshError) {
+        notifyAuthExpired();
+        return Promise.reject(refreshError);
       }
     }
+
+    if (isUnauthorized) {
+      notifyAuthExpired();
+    }
+
     return Promise.reject(error);
   }
 );
