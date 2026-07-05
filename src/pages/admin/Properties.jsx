@@ -4,6 +4,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import DeleteIcon from "@mui/icons-material/Delete";
 import EditIcon from "@mui/icons-material/Edit";
 import VisibilityIcon from "@mui/icons-material/Visibility";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
 import toast from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import Page from "../../components/common/Page";
@@ -20,6 +21,7 @@ const propertyImage = (row) => {
   const images = row?.images || row?.property_images || [];
   return row?.cover_image?.image_url || images.find((image) => image.is_primary || image.is_cover)?.image_url || images[0]?.image_url || "";
 };
+const isVisibleToUsers = (row) => row?.status === "active" && row?.is_active !== false;
 
 function PropertyThumb({ row }) {
   const image = propertyImage(row);
@@ -50,8 +52,8 @@ export default function Properties() {
 
     await toast.promise(Promise.all(ids.map((id) => {
       if (action === "approve") return api.post(`/admin/properties/${id}/approve`);
-      if (action === "disable") return api.post(`/admin/properties/${id}/availability/admin`, { is_available: false });
-      return api.post(`/admin/properties/${id}/availability/admin`, { is_available: true });
+      if (action === "hide") return api.patch(`/admin/properties/${id}/visibility`, { is_visible: false });
+      return api.patch(`/admin/properties/${id}/visibility`, { is_visible: true });
     })), {
       loading: "Updating properties...",
       success: "Properties updated",
@@ -82,7 +84,7 @@ export default function Properties() {
   };
 
   return (
-    <Page title="Properties" subtitle="Approve listings, edit listing data, and manage availability." action={
+    <Page title="Properties" subtitle="Approve listings, edit listing data, and manage public visibility." action={
       <FormControl size="small" sx={{ minWidth: 180 }}><InputLabel>Status</InputLabel><Select label="Status" value={status} onChange={(event) => setStatus(event.target.value)}><MenuItem value="">All</MenuItem><MenuItem value="pending">Pending</MenuItem><MenuItem value="active">Active</MenuItem><MenuItem value="inactive">Inactive</MenuItem></Select></FormControl>
     }>
       <DataTable
@@ -92,8 +94,8 @@ export default function Properties() {
         getRowId={propertyId}
         bulkActions={() => [
           <Button key="approve" size="small" variant="contained" onClick={() => runBulk("approve")}>Approve</Button>,
-          <Button key="disable" size="small" color="warning" onClick={() => runBulk("disable")}>Disable</Button>,
-          <Button key="enable" size="small" onClick={() => runBulk("enable")}>Enable</Button>,
+          <Button key="hide" size="small" color="warning" onClick={() => runBulk("hide")}>Hide from users</Button>,
+          <Button key="show" size="small" onClick={() => runBulk("show")}>Show to users</Button>,
         ]}
         search={search}
         onSearch={setSearch}
@@ -106,7 +108,8 @@ export default function Properties() {
           { key: "city", label: "City" },
           { key: "price_per_night", label: "Nightly", render: (row) => money(row.price_per_night) },
           { key: "status", label: "Status", render: (row) => <Chip size="small" label={row.status} /> },
-          { key: "is_available", label: "Available", render: (row) => row.is_available ? "Yes" : "No" },
+          { key: "is_visible", label: "Visible to users", render: (row) => <Chip size="small" color={isVisibleToUsers(row) ? "success" : "default"} label={isVisibleToUsers(row) ? "Visible" : "Hidden"} /> },
+          { key: "is_available", label: "Bookable", render: (row) => row.is_available ? "Yes" : "No" },
         ]}
         actions={(row) => {
           const id = propertyId(row);
@@ -115,7 +118,19 @@ export default function Properties() {
             <RowButton key="view" title="View" icon={<VisibilityIcon />} onClick={() => id ? navigate(`/properties/${id}`) : toast.error("This property is missing an ID.")} />,
             <RowButton key="approve" title="Approve" color="primary" icon={<CheckCircleIcon />} onClick={() => id && mutate(api.post(`/admin/properties/${id}/approve`), "Property approved", reload)} />,
             <RowButton key="edit" title="Edit" icon={<EditIcon />} onClick={() => id && navigate(`/properties/${id}/edit`)} />,
-            <Button key="toggle" size="small" onClick={() => id && mutate(api.post(`/admin/properties/${id}/availability/admin`, { is_available: !row.is_available }), "Availability updated", reload)}>{row.is_available ? "Disable" : "Enable"}</Button>,
+            <Button
+              key="visibility"
+              size="small"
+              color={isVisibleToUsers(row) ? "warning" : "success"}
+              startIcon={isVisibleToUsers(row) ? <VisibilityOffIcon /> : <VisibilityIcon />}
+              onClick={() => id && mutate(
+                api.patch(`/admin/properties/${id}/visibility`, { is_visible: !isVisibleToUsers(row) }),
+                isVisibleToUsers(row) ? "Property hidden from users" : "Property shown to users",
+                reload,
+              )}
+            >
+              {isVisibleToUsers(row) ? "Hide" : "Show"}
+            </Button>,
             <Button key="dates" size="small" onClick={() => { setDateDialog(row); setDates([]); setSelectedDate(""); }}>Dates</Button>,
             <RowButton key="delete" title="Delete" color="error" icon={<DeleteIcon />} onClick={() => setConfirm({ row })} />,
           ];

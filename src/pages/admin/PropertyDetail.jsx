@@ -14,6 +14,9 @@ import {
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import EditIcon from "@mui/icons-material/Edit";
+import VisibilityIcon from "@mui/icons-material/Visibility";
+import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
+import toast from "react-hot-toast";
 import Page from "../../components/common/Page";
 import { api, errorMessage, unwrap } from "../../lib/api";
 import { money, date } from "../../utils/formatters";
@@ -34,6 +37,8 @@ const listText = (items, key) => {
     .map((item) => (typeof item === "string" ? item : item?.[key]))
     .filter(Boolean);
 };
+
+const isVisibleToUsers = (property) => property?.status === "active" && property?.is_active !== false;
 
 function InfoItem({ label, value }) {
   return (
@@ -79,6 +84,18 @@ export default function PropertyDetail() {
   const hero = primaryImage(property);
   const facilities = listText(property?.facilities, "facility_name");
   const rules = listText(property?.rules, "rule_text");
+  const visibleToUsers = isVisibleToUsers(property);
+
+  const toggleVisibility = async () => {
+    await toast.promise(
+      api.patch(`/admin/properties/${propertyId}/visibility`, { is_visible: !visibleToUsers }),
+      {
+        loading: "Updating visibility...",
+        success: visibleToUsers ? "Property hidden from users" : "Property shown to users",
+        error: (requestError) => errorMessage(requestError),
+      },
+    ).then((response) => setProperty(unwrap(response)));
+  };
 
   if (loading) {
     return (
@@ -111,6 +128,14 @@ export default function PropertyDetail() {
       subtitle={[property.city, property.state, property.country].filter(Boolean).join(", ")}
       action={<Stack direction="row" spacing={1}>
         <Button startIcon={<ArrowBackIcon />} onClick={() => navigate("/properties")}>Back</Button>
+        <Button
+          color={visibleToUsers ? "warning" : "success"}
+          variant="outlined"
+          startIcon={visibleToUsers ? <VisibilityOffIcon /> : <VisibilityIcon />}
+          onClick={toggleVisibility}
+        >
+          {visibleToUsers ? "Hide from users" : "Show to users"}
+        </Button>
         <Button variant="contained" startIcon={<EditIcon />} onClick={() => navigate(`/properties/${propertyId}/edit`)}>Edit</Button>
       </Stack>}
     >
@@ -145,6 +170,7 @@ export default function PropertyDetail() {
             <Stack spacing={2}>
               <Stack direction="row" spacing={1} flexWrap="wrap">
                 <Chip size="small" label={property.status || "pending"} color={property.status === "active" ? "success" : "default"} />
+                <Chip size="small" label={visibleToUsers ? "Visible to users" : "Hidden from users"} color={visibleToUsers ? "success" : "default"} variant="outlined" />
                 <Chip size="small" label={property.is_available ? "Available" : "Unavailable"} variant="outlined" />
                 {property.featured && <Chip size="small" label="Featured" color="primary" />}
               </Stack>
