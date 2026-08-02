@@ -13,6 +13,8 @@ import {
   Typography,
 } from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import LogoutIcon from "@mui/icons-material/Logout";
+import SecurityIcon from "@mui/icons-material/Security";
 import Page from "../../components/common/Page";
 import DataTable from "../../components/common/DataTable";
 import { api, errorMessage, unwrap } from "../../lib/api";
@@ -33,8 +35,10 @@ export default function UserDetail() {
   const { userId } = useParams();
   const navigate = useNavigate();
   const [payload, setPayload] = useState(null);
+  const [authSecurity, setAuthSecurity] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [forcingLogout, setForcingLogout] = useState(false);
 
   useEffect(() => {
     let active = true;
@@ -44,8 +48,14 @@ export default function UserDetail() {
       setError("");
 
       try {
-        const data = unwrap(await api.get(`/admin/users/${userId}`));
-        if (active) setPayload(data);
+        const [data, authData] = await Promise.all([
+          api.get(`/admin/users/${userId}`).then(unwrap),
+          api.get(`/admin/users/${userId}/auth-security`).then(unwrap),
+        ]);
+        if (active) {
+          setPayload(data);
+          setAuthSecurity(authData);
+        }
       } catch (requestError) {
         if (active) setError(errorMessage(requestError));
       } finally {
@@ -83,6 +93,20 @@ export default function UserDetail() {
   const hostBookings = payload?.host_bookings || [];
   const properties = payload?.properties || [];
   const reviews = payload?.reviews || [];
+  const authSignals = authSecurity?.risk_signals || {};
+  const sessions = authSecurity?.sessions || [];
+  const authEvents = authSecurity?.recent_activity || [];
+
+  const forceLogout = async () => {
+    setForcingLogout(true);
+    try {
+      await api.post(`/admin/users/${userId}/force-logout`);
+      const authData = unwrap(await api.get(`/admin/users/${userId}/auth-security`));
+      setAuthSecurity(authData);
+    } finally {
+      setForcingLogout(false);
+    }
+  };
 
   return (
     <Page
@@ -130,6 +154,56 @@ export default function UserDetail() {
               </Grid>
             ))}
           </Grid>
+        </Grid>
+
+        <Grid item xs={12}>
+          <Paper sx={{ p: 2.5 }}>
+            <Stack direction={{ xs: "column", md: "row" }} spacing={2} justifyContent="space-between" alignItems={{ md: "center" }}>
+              <Box>
+                <Typography variant="h6" sx={{ display: "flex", alignItems: "center", gap: 1 }}><SecurityIcon fontSize="small" /> Auth risk signals</Typography>
+                <Typography variant="body2" color="text.secondary">Active sessions, failed logins, high-risk auth events, and Google connection state.</Typography>
+              </Box>
+              <Button color="warning" variant="outlined" startIcon={<LogoutIcon />} disabled={forcingLogout} onClick={forceLogout}>Force logout</Button>
+            </Stack>
+            <Grid container spacing={2} sx={{ mt: 1 }}>
+              {[
+                ["Active sessions", authSignals.active_sessions],
+                ["Failed logins", authSignals.recent_failed_logins],
+                ["High-risk events", authSignals.high_risk_events],
+                ["Google connected", authSignals.google_connected ? "Yes" : "No"],
+              ].map(([label, value]) => (
+                <Grid item xs={12} sm={6} md={3} key={label}>
+                  <Paper variant="outlined" sx={{ p: 1.5 }}>
+                    <Typography variant="caption" color="text.secondary">{label}</Typography>
+                    <Typography variant="h6">{value ?? 0}</Typography>
+                  </Paper>
+                </Grid>
+              ))}
+            </Grid>
+          </Paper>
+        </Grid>
+
+        <Grid item xs={12}>
+          <Typography variant="h6" sx={{ mb: 1 }}>Auth sessions</Typography>
+          <DataTable rows={sessions} columns={[
+            { key: "device_name", label: "Device" },
+            { key: "provider", label: "Provider" },
+            { key: "ip_address", label: "IP" },
+            { key: "last_seen_at", label: "Last seen", render: (row) => date(row.last_seen_at || row.created_at) },
+            { key: "revoked_at", label: "Status", render: (row) => <Chip size="small" color={row.revoked_at ? "error" : "success"} label={row.revoked_at ? "revoked" : "active"} /> },
+          ]} />
+        </Grid>
+
+        <Grid item xs={12}>
+          <Typography variant="h6" sx={{ mb: 1 }}>Recent auth activity</Typography>
+          <DataTable rows={authEvents} columns={[
+            { key: "event_type", label: "Event" },
+            { key: "provider", label: "Provider" },
+            { key: "status", label: "Status", render: (row) => <Chip size="small" color={row.status === "failed" ? "error" : "success"} label={row.status} /> },
+            { key: "risk_level", label: "Risk", render: (row) => <Chip size="small" color={row.risk_level === "high" ? "error" : row.risk_level === "medium" ? "warning" : "default"} label={row.risk_level} /> },
+            { key: "ip_address", label: "IP" },
+            { key: "created_at", label: "When", render: (row) => date(row.created_at) },
+          ]} />
         </Grid>
 
         <Grid item xs={12}>

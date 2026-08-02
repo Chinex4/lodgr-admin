@@ -7,6 +7,7 @@ import AdminLoginPage from "./pages/auth/AdminLoginPage";
 import AuditLogs from "./pages/admin/AuditLogs";
 import Bookings from "./pages/admin/Bookings";
 import ContactMessages from "./pages/admin/ContactMessages";
+import Disputes from "./pages/admin/Disputes";
 import Overview from "./pages/admin/Overview";
 import Newsletter from "./pages/admin/Newsletter";
 import PaymentMethods from "./pages/admin/PaymentMethods";
@@ -15,6 +16,7 @@ import Properties from "./pages/admin/Properties";
 import PropertyDetail from "./pages/admin/PropertyDetail";
 import PropertyEdit from "./pages/admin/PropertyEdit";
 import Reviews from "./pages/admin/Reviews";
+import RiskFlags from "./pages/admin/RiskFlags";
 import Settings from "./pages/admin/Settings";
 import Transactions from "./pages/admin/Transactions";
 import Users from "./pages/admin/Users";
@@ -22,6 +24,7 @@ import UserDetail from "./pages/admin/UserDetail";
 import Withdrawals from "./pages/admin/Withdrawals";
 import BookingDetail from "./pages/admin/BookingDetail";
 import HomeSections from "./pages/admin/HomeSections";
+import HostVerifications from "./pages/admin/HostVerifications";
 
 export default function App() {
   return (
@@ -38,6 +41,9 @@ export default function App() {
           <Route path="properties/:propertyId/edit" element={<PropertyEdit />} />
           <Route path="bookings" element={<Bookings />} />
           <Route path="bookings/:bookingId" element={<BookingDetail />} />
+          <Route path="risk-flags" element={<RiskFlags />} />
+          <Route path="disputes" element={<Disputes />} />
+          <Route path="host-verifications" element={<HostVerifications />} />
           <Route path="home-sections" element={<HomeSections />} />
           <Route path="payment-methods" element={<PaymentMethods />} />
           <Route path="payouts" element={<Payouts />} />

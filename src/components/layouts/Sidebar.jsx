@@ -13,11 +13,16 @@ import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import RateReviewIcon from "@mui/icons-material/RateReview";
 import ContactMailIcon from "@mui/icons-material/ContactMail";
 import ManageSearchIcon from "@mui/icons-material/ManageSearch";
+import ReportProblemIcon from "@mui/icons-material/ReportProblem";
+import GavelIcon from "@mui/icons-material/Gavel";
+import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
 import SettingsIcon from "@mui/icons-material/Settings";
 
 const links = [
   ["/", "Overview", DashboardIcon], ["/users", "Users", PeopleIcon], ["/properties", "Properties", HomeWorkIcon],
   ["/bookings", "Bookings", EventAvailableIcon], ["/home-sections", "Home Sections", ViewCarouselIcon],
+  ["/risk-flags", "Risk Review", ReportProblemIcon], ["/disputes", "Disputes", GavelIcon],
+  ["/host-verifications", "Host Verification", VerifiedUserIcon],
   ["/payment-methods", "Payment Methods", PaymentsIcon],
   ["/payouts", "Payouts", AccountBalanceWalletIcon], ["/withdrawals", "Withdrawals", AccountBalanceWalletIcon],
   ["/newsletter", "Newsletter", CampaignIcon], ["/transactions", "Transactions", ReceiptLongIcon],
