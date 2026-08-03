@@ -24,6 +24,7 @@ const links = [
   ["/risk-flags", "Risk Review", ReportProblemIcon], ["/disputes", "Disputes", GavelIcon],
   ["/host-verifications", "Host Verification", VerifiedUserIcon],
   ["/payment-methods", "Payment Methods", PaymentsIcon],
+  ["/payment-reconciliations", "Payment Reconciliation", ManageSearchIcon],
   ["/payouts", "Payouts", AccountBalanceWalletIcon], ["/withdrawals", "Withdrawals", AccountBalanceWalletIcon],
   ["/newsletter", "Newsletter", CampaignIcon], ["/transactions", "Transactions", ReceiptLongIcon],
   ["/reviews", "Reviews", RateReviewIcon], ["/contact-messages", "Contact Messages", ContactMailIcon],

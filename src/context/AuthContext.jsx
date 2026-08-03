@@ -10,8 +10,12 @@ export function AuthProvider({ children }) {
   const [token, setToken] = useState(() => tokenStore.getToken());
   const isAuthenticated = Boolean(token && user);
 
-  const login = async ({ email, password }) => {
-    const payload = unwrap(await api.post("/admin/login", { email, password }));
+  const login = async ({ email, password, otp_code }) => {
+    const payload = unwrap(await api.post("/admin/login", { email, password, otp_code }));
+    if (payload?.requires_otp) {
+      return payload;
+    }
+
     const nextToken = payload.token;
     const nextUser = payload.user;
     tokenStore.setToken(nextToken);

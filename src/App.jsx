@@ -11,6 +11,7 @@ import Disputes from "./pages/admin/Disputes";
 import Overview from "./pages/admin/Overview";
 import Newsletter from "./pages/admin/Newsletter";
 import PaymentMethods from "./pages/admin/PaymentMethods";
+import PaymentReconciliations from "./pages/admin/PaymentReconciliations";
 import Payouts from "./pages/admin/Payouts";
 import Properties from "./pages/admin/Properties";
 import PropertyDetail from "./pages/admin/PropertyDetail";
@@ -46,6 +47,7 @@ export default function App() {
           <Route path="host-verifications" element={<HostVerifications />} />
           <Route path="home-sections" element={<HomeSections />} />
           <Route path="payment-methods" element={<PaymentMethods />} />
+          <Route path="payment-reconciliations" element={<PaymentReconciliations />} />
           <Route path="payouts" element={<Payouts />} />
           <Route path="withdrawals" element={<Withdrawals />} />
           <Route path="newsletter" element={<Newsletter />} />

@@ -13,6 +13,8 @@ export default function AdminLoginPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const [form, setForm] = useState({ email: "", password: "" });
+  const [otpCode, setOtpCode] = useState("");
+  const [requiresOtp, setRequiresOtp] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const from = location.state?.from?.pathname || "/";
@@ -21,7 +23,14 @@ export default function AdminLoginPage() {
     event.preventDefault();
     setLoading(true);
     try {
-      await toast.promise(login(form), { loading: "Signing in...", success: "Welcome back", error: (e) => errorMessage(e) });
+      const result = await toast.promise(
+        login({ ...form, otp_code: requiresOtp ? otpCode : undefined }),
+        { loading: requiresOtp ? "Verifying code..." : "Signing in...", success: (value) => value?.requires_otp ? "Security code sent" : "Welcome back", error: (e) => errorMessage(e) },
+      );
+      if (result?.requires_otp) {
+        setRequiresOtp(true);
+        return;
+      }
       navigate(from, { replace: true });
     } finally { setLoading(false); }
   };
@@ -48,12 +57,22 @@ export default function AdminLoginPage() {
               ),
             }}
           />
+          {requiresOtp ? (
+            <TextField
+              label="Admin security code"
+              required
+              value={otpCode}
+              onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, "").slice(0, 8))}
+              inputProps={{ inputMode: "numeric" }}
+              helperText="Enter the email code sent after your password was accepted."
+            />
+          ) : null}
           <Box sx={{ textAlign: "right" }}>
             <Link component="button" type="button" onClick={() => navigate("/forgot-password")}>
               Forgot password?
             </Link>
           </Box>
-          <Button size="large" type="submit" variant="contained" disabled={loading}>{loading ? "Signing in..." : "Sign in"}</Button>
+          <Button size="large" type="submit" variant="contained" disabled={loading}>{loading ? "Signing in..." : requiresOtp ? "Verify and sign in" : "Sign in"}</Button>
         </Stack>
       </Paper>
     </Container>
