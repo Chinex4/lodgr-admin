@@ -17,6 +17,7 @@ import ReportProblemIcon from "@mui/icons-material/ReportProblem";
 import GavelIcon from "@mui/icons-material/Gavel";
 import VerifiedUserIcon from "@mui/icons-material/VerifiedUser";
 import SettingsIcon from "@mui/icons-material/Settings";
+import BackupIcon from "@mui/icons-material/Backup";
 
 const links = [
   ["/", "Overview", DashboardIcon], ["/users", "Users", PeopleIcon], ["/properties", "Properties", HomeWorkIcon],
@@ -28,7 +29,7 @@ const links = [
   ["/payouts", "Payouts", AccountBalanceWalletIcon], ["/withdrawals", "Withdrawals", AccountBalanceWalletIcon],
   ["/newsletter", "Newsletter", CampaignIcon], ["/transactions", "Transactions", ReceiptLongIcon],
   ["/reviews", "Reviews", RateReviewIcon], ["/contact-messages", "Contact Messages", ContactMailIcon],
-  ["/audit-logs", "Audit Log", ManageSearchIcon], ["/settings", "Settings", SettingsIcon],
+  ["/audit-logs", "Audit Log", ManageSearchIcon], ["/backups", "Backups", BackupIcon], ["/settings", "Settings", SettingsIcon],
 ];
 
 function DrawerContent({ onClose }) {

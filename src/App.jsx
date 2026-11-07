@@ -5,6 +5,7 @@ import AppLayout from "./components/layouts/AppLayout";
 import AdminForgotPasswordPage from "./pages/auth/AdminForgotPasswordPage";
 import AdminLoginPage from "./pages/auth/AdminLoginPage";
 import AuditLogs from "./pages/admin/AuditLogs";
+import Backups from "./pages/admin/Backups";
 import Bookings from "./pages/admin/Bookings";
 import ContactMessages from "./pages/admin/ContactMessages";
 import Disputes from "./pages/admin/Disputes";
@@ -55,6 +56,7 @@ export default function App() {
           <Route path="reviews" element={<Reviews />} />
           <Route path="contact-messages" element={<ContactMessages />} />
           <Route path="audit-logs" element={<AuditLogs />} />
+          <Route path="backups" element={<Backups />} />
           <Route path="settings" element={<Settings />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Route>
